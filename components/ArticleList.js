@@ -1,29 +1,20 @@
+import { useNavigation } from "@react-navigation/native";
 import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from "react-native";
 
-// Function to format date (Equivalent to `formatDate`)
 const formatDate = (dateString) => new Date(dateString).toDateString();
 
-// Load more posts from API
-const loadMorePosts = async (nextPage, setPosts, setNextPage) => {
-  if (!nextPage) return;
-
-  try {
-    const response = await fetch(nextPage);
-    const data = await response.json();
-    setPosts((prevPosts) => [...prevPosts, ...data.results]);
-    setNextPage(data.next);
-  } catch (error) {
-    console.error("Failed to load more posts", error);
-  }
-};
-
 export default function ArticleList({ posts, nextPage, setPosts, setNextPage }) {
+  const navigation = useNavigation();
+
   return (
     <FlatList
       data={posts}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
-        <TouchableOpacity style={styles.article}>
+        <TouchableOpacity 
+          style={styles.article} 
+          onPress={() => navigation.navigate("PostDetail", { post: item })}
+        >
           <View style={styles.textContainer}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.content}>{item.content.slice(0, 100)}...</Text>
@@ -32,18 +23,10 @@ export default function ArticleList({ posts, nextPage, setPosts, setNextPage }) 
           {item.image && <Image source={{ uri: item.image }} style={styles.image} />}
         </TouchableOpacity>
       )}
-      ListFooterComponent={
-        nextPage ? (
-          <TouchableOpacity style={styles.loadMoreButton} onPress={() => loadMorePosts(nextPage, setPosts, setNextPage)}>
-            <Text style={styles.loadMoreText}>See More</Text>
-          </TouchableOpacity>
-        ) : null
-      }
     />
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
   article: {
     flexDirection: "row",
@@ -70,16 +53,5 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     marginLeft: 10,
-  },
-  loadMoreButton: {
-    padding: 15,
-    backgroundColor: "#242424",
-    alignItems: "center",
-    marginVertical: 10,
-    borderRadius: 10,
-  },
-  loadMoreText: {
-    color: "#fff",
-    fontWeight: "bold",
   },
 });
