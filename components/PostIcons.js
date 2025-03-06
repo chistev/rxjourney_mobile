@@ -1,22 +1,21 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { useState } from "react";
+import ShareOptions from "./ShareOptions";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function PostIcons() {
+  const [showShareOptions, setShowShareOptions] = useState(false);
+
   return (
     <View style={styles.container}>
-      <Text style={styles.icon}>❤️</Text>
-      <Text style={styles.icon}>💬</Text>
-      <Text style={styles.icon}>🔗</Text>
+      <TouchableOpacity onPress={() => setShowShareOptions(!showShareOptions)}>
+        <Ionicons name="share-social" size={24} color="#777" />
+      </TouchableOpacity>
+      {showShareOptions && <ShareOptions onClose={() => setShowShareOptions(false)} />}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-  },
-  icon: {
-    fontSize: 18,
-  },
+  container: { flexDirection: "row", justifyContent: "flex-end", alignItems: "center", padding: 10 },
 });
