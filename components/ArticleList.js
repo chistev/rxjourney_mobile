@@ -3,13 +3,13 @@ import { View, Text, FlatList, TouchableOpacity, Image, StyleSheet } from "react
 
 const formatDate = (dateString) => new Date(dateString).toDateString();
 
-export default function ArticleList({ posts, nextPage, setPosts, setNextPage }) {
+export default function ArticleList({ posts }) {
   const navigation = useNavigation();
 
   return (
     <FlatList
       data={posts}
-      keyExtractor={(item) => item.id}
+      keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
         <TouchableOpacity 
           style={styles.article} 
@@ -27,6 +27,7 @@ export default function ArticleList({ posts, nextPage, setPosts, setNextPage }) 
   );
 }
 
+// Styles
 const styles = StyleSheet.create({
   article: {
     flexDirection: "row",

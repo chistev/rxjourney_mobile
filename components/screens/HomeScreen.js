@@ -1,34 +1,56 @@
-import { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { useState, useEffect } from "react";
+import { Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
 import ArticleList from "../ArticleList";
 import ProfileCard from "../ProfileCard";
 
-// Sample Data (Replace with API Call)
-const initialData = {
-  posts: [
-    { id: "1", title: "First Post", content: "This is my first blog post!", created_at: "2024-02-20" },
-    { id: "2", title: "Second Post", content: "Another great article here.", created_at: "2024-02-22" },
-  ],
-  nextPage: "https://api.example.com/posts?page=2",
-};
-
 export default function HomeScreen() {
-  const [posts, setPosts] = useState(initialData.posts);
-  const [nextPage, setNextPage] = useState(initialData.nextPage);
+  const [posts, setPosts] = useState([]);
+  const [nextPage, setNextPage] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPosts("https://rxjourneyserver.pythonanywhere.com/home/post_list/?page=1");
+  }, []);
+
+  async function fetchPosts(url) {
+    if (!url) return;
+    setLoading(true);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error("Failed to fetch posts");
+
+      const data = await response.json();
+      setPosts((prevPosts) => [...prevPosts, ...data.results]);
+      setNextPage(data.next);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Chistev</Text>
-      <ArticleList posts={posts} nextPage={nextPage} setPosts={setPosts} setNextPage={setNextPage} />
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <ProfileCard />
-    </View>
+      <Text style={styles.header}>Chistev</Text>
+      
+      <ArticleList posts={posts} />
+
+      {nextPage && (
+        <TouchableOpacity style={styles.loadMoreButton} onPress={() => fetchPosts(nextPage)} disabled={loading}>
+          <Text style={styles.loadMoreText}>Load More</Text>
+        </TouchableOpacity>
+      )}
+      
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+    </ScrollView>
   );
 }
 
-// Styles
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  scrollContainer: {
+    flexGrow: 1,
     padding: 20,
     backgroundColor: "#fff",
   },
@@ -36,5 +58,20 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     marginBottom: 20,
+  },
+  loadMoreButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: "#242424",
+    borderRadius: 20,
+    backgroundColor: "transparent",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  loadMoreText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#242424",
   },
 });
