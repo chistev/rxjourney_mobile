@@ -10,7 +10,7 @@ const Tab = createBottomTabNavigator();
 export default function MainTabs() {
   return (
     <View style={styles.container}>
-      <Navbar />
+      {/* Only show Navbar if not on AboutScreen */}
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -27,7 +27,15 @@ export default function MainTabs() {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen
+          name="Home"
+          component={() => (
+            <View style={{ flex: 1 }}>
+              <Navbar />
+              <HomeScreen />
+            </View>
+          )}
+        />
         <Tab.Screen name="About" component={AboutScreen} />
       </Tab.Navigator>
     </View>

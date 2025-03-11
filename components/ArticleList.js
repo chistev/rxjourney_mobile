@@ -17,7 +17,7 @@ export default function ArticleList({ posts }) {
         >
           <View style={styles.textContainer}>
             <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.content}>{item.content.slice(0, 100)}...</Text>
+            <Text style={styles.content}>{item.content.slice(0, 250)}...</Text>
             <Text style={styles.date}>{formatDate(item.created_at)}</Text>
           </View>
           {item.image && <Image source={{ uri: item.image }} style={styles.image} />}
