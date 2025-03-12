@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, useWindowDimensions } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import RenderHTML from "react-native-render-html";
 
 const formatDate = (dateString) => new Date(dateString).toDateString();
 
 export default function MorePosts({ currentSlug }) {
   const [randomPosts, setRandomPosts] = useState([]);
   const navigation = useNavigation();
+  const { width } = useWindowDimensions(); // Get screen width for HTML rendering
 
   useEffect(() => {
     const fetchRandomPosts = async () => {
@@ -34,11 +36,11 @@ export default function MorePosts({ currentSlug }) {
             <TouchableOpacity
               key={post.slug}
               style={styles.postCard}
-              onPress={() => navigation.navigate("PostDetailScreen", { post })}
+              onPress={() => navigation.navigate("PostDetail", { post })}
             >
               <Text style={styles.title}>{post.title}</Text>
               <Text style={styles.meta}>{formatDate(post.created_at)}</Text>
-              <Text numberOfLines={3} style={styles.content}>{post.content}</Text>
+              <RenderHTML contentWidth={width} source={{ html: post.content }} />
             </TouchableOpacity>
           ))}
         </>
@@ -54,5 +56,4 @@ const styles = StyleSheet.create({
   postCard: { backgroundColor: "#f9f9f9", padding: 15, borderRadius: 8, marginBottom: 10 },
   title: { fontSize: 16, fontWeight: "700", color: "#242424" },
   meta: { fontSize: 12, color: "#6b6b6b", marginBottom: 5 },
-  content: { fontSize: 14, color: "#242424", lineHeight: 20 },
 });

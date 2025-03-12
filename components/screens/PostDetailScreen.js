@@ -1,5 +1,6 @@
 import { View, Text, Image, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { useRoute } from "@react-navigation/native";
+import { useRef, useEffect } from "react";
 import PostIcons from "../PostIcons"; 
 import SupportSection from "../SupportSection";
 import ProfileCard from "../ProfileCard";
@@ -10,9 +11,17 @@ const formatDate = (dateString) => new Date(dateString).toDateString();
 export default function PostDetailScreen() {
   const route = useRoute();
   const { post } = route.params;
+  const scrollViewRef = useRef(null); // Create a reference for the ScrollView
+
+  // Scroll to the top whenever the post changes
+  useEffect(() => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
+  }, [post]); // Runs whenever post changes
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView ref={scrollViewRef} style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{post.title}</Text>
         <Text style={styles.date}>{formatDate(post.created_at)}</Text>
