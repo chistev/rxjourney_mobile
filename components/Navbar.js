@@ -1,14 +1,32 @@
 import { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigation.navigate("Search", { query: searchQuery });
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`https://rxjourneyserver.pythonanywhere.com/home/search?query=${encodeURIComponent(searchQuery)}`);
+      const data = await response.json();
+
+      if (data.length > 0) {
+        navigation.navigate("Search", { results: data, query: searchQuery });
+      } else {
+        alert("No results found.");
+      }
+    } catch (error) {
+      alert("Error fetching search results.");
+      console.error(error);
+    } finally {
+      setLoading(false);
       setSearchQuery("");
     }
   };
@@ -23,9 +41,15 @@ export default function Navbar() {
           placeholder="Search"
           value={searchQuery}
           onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch} 
+          returnKeyType="search"
         />
-        <TouchableOpacity onPress={handleSearch} style={styles.searchButton}>
-          <Text style={styles.searchButtonText}>🔍</Text>
+        <TouchableOpacity onPress={handleSearch} style={styles.searchButton} disabled={loading}>
+          {loading ? (
+            <ActivityIndicator size="small" color="#007bff" />
+          ) : (
+            <Ionicons name="search" size={22} color="#007bff" />
+          )}
         </TouchableOpacity>
       </View>
     </View>
@@ -36,8 +60,8 @@ const styles = StyleSheet.create({
   navbar: {
     padding: 15,
     backgroundColor: "#fff",
-    elevation: 3, // Android shadow
-    shadowColor: "#000", // iOS shadow
+    elevation: 3,
+    shadowColor: "#000",
     shadowOpacity: 0.1,
     shadowRadius: 5,
   },
@@ -64,9 +88,5 @@ const styles = StyleSheet.create({
   },
   searchButton: {
     padding: 8,
-  },
-  searchButtonText: {
-    fontSize: 18,
-    color: "#007bff",
   },
 });
