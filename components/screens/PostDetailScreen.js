@@ -28,7 +28,7 @@ export default function PostDetailScreen() {
       </View>
 
       <View style={styles.metaContainer}>
-        <PostIcons />
+        <PostIcons slug={post.slug} />
       </View>
 
       {post.image && <Image source={{ uri: post.image }} style={styles.image} />}
@@ -37,7 +37,7 @@ export default function PostDetailScreen() {
         <Text style={styles.postText}>{post.content}</Text>
       </View>
 
-      <PostIcons />
+      <PostIcons slug={post.slug}/>
 
       <SupportSection />
 
