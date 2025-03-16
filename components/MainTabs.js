@@ -1,4 +1,4 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, SafeAreaView, Platform } from "react-native"; 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "./screens/HomeScreen";
 import AboutScreen from "./screens/AboutScreen";
@@ -9,8 +9,7 @@ const Tab = createBottomTabNavigator();
 
 export default function MainTabs() {
   return (
-    <View style={styles.container}>
-      {/* Only show Navbar if not on AboutScreen */}
+    <SafeAreaView style={styles.safeContainer}>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
@@ -30,7 +29,7 @@ export default function MainTabs() {
         <Tab.Screen
           name="Home"
           component={() => (
-            <View style={{ flex: 1 }}>
+            <View style={styles.container}>
               <Navbar />
               <HomeScreen />
             </View>
@@ -38,11 +37,16 @@ export default function MainTabs() {
         />
         <Tab.Screen name="About" component={AboutScreen} />
       </Tab.Navigator>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: Platform.OS === "android" ? 25 : 0, // Ensure spacing for Android status bar
+  },
   container: {
     flex: 1,
   },
