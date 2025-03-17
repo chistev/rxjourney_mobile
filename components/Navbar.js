@@ -14,7 +14,9 @@ export default function Navbar() {
     setLoading(true);
 
     try {
-      const response = await fetch(`https://rxjourneyserver.pythonanywhere.com/home/search?query=${encodeURIComponent(searchQuery)}`);
+      const response = await fetch(
+        `https://rxjourneyserver.pythonanywhere.com/home/search?query=${encodeURIComponent(searchQuery)}`
+      );
       const data = await response.json();
 
       if (data.length > 0) {
@@ -33,7 +35,10 @@ export default function Navbar() {
 
   return (
     <View style={styles.navbar}>
-      <Text style={styles.brand}>RxJourney</Text>
+      {/* Make RxJourney text clickable */}
+      <TouchableOpacity onPress={() => navigation.navigate("MainTabs")}>
+        <Text style={styles.brand}>RxJourney</Text>
+      </TouchableOpacity>
 
       <View style={styles.searchContainer}>
         <TextInput
@@ -41,7 +46,7 @@ export default function Navbar() {
           placeholder="Search"
           value={searchQuery}
           onChangeText={setSearchQuery}
-          onSubmitEditing={handleSearch} 
+          onSubmitEditing={handleSearch}
           returnKeyType="search"
         />
         <TouchableOpacity onPress={handleSearch} style={styles.searchButton} disabled={loading}>
