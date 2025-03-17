@@ -3,6 +3,7 @@ import { useRoute } from "@react-navigation/native";
 import { useRef, useEffect } from "react";
 import RenderHTML from "react-native-render-html";
 import { useWindowDimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import PostIcons from "../PostIcons"; 
 import SupportSection from "../SupportSection";
 import ProfileCard from "../ProfileCard";
@@ -16,6 +17,8 @@ export default function PostDetailScreen() {
   const { post } = route.params;
   const scrollViewRef = useRef(null);
   const { width } = useWindowDimensions();
+
+   const navigation = useNavigation();
 
   useEffect(() => {
     if (scrollViewRef.current) {
@@ -52,9 +55,9 @@ export default function PostDetailScreen() {
           <MorePosts currentSlug={post.slug} />
           <View style={styles.divider} />
           <View style={styles.seeAllContainer}>
-            <TouchableOpacity>
-              <Text style={styles.seeAllButton}>See all from Chistev</Text>
-            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("MainTabs")}>
+            <Text style={styles.seeAllButton}>See all from Chistev</Text>
+          </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
