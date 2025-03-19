@@ -1,36 +1,16 @@
 import { useState, useEffect, useCallback } from "react";
 import { Text, StyleSheet, ActivityIndicator, ScrollView, TouchableOpacity } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo"; // To check internet connection
 import ArticleList from "../ArticleList";
 import ProfileCard from "../ProfileCard";
 
 export default function HomeScreen() {
-  const [posts, setPosts] = useState([]);
-  const [nextPage, setNextPage] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [posts, setPosts] = useState([]); // Stores all posts
+  const [nextPage, setNextPage] = useState(null); // Tracks the next page URL
+  const [loading, setLoading] = useState(false); // Indicates loading state
 
-  // Memoize loadPosts to prevent unnecessary re-creations
-  const loadPosts = useCallback(async () => {
-    setLoading(true);
-    
-    // Check if internet is available
-    const netInfo = await NetInfo.fetch();
-    if (!netInfo.isConnected) {
-      // Load offline data
-      const savedPosts = await AsyncStorage.getItem("savedPosts");
-      if (savedPosts) {
-        setPosts(JSON.parse(savedPosts));
-      }
-      setLoading(false);
-      return;
-    }
-
-    // Fetch latest posts from the server if online
-    fetchPosts("https://rxjourneyserver.pythonanywhere.com/home/post_list/?page=1");
-  }, []);
-
-  async function fetchPosts(url) {
+  // Function to fetch posts
+  const fetchPosts = async (url, isInitial = false) => {
     if (!url) return;
     setLoading(true);
 
@@ -41,28 +21,40 @@ export default function HomeScreen() {
       const data = await response.json();
       const newPosts = data.results;
 
-      // Merge old and new posts
-      const storedPosts = await AsyncStorage.getItem("savedPosts");
-      const oldPosts = storedPosts ? JSON.parse(storedPosts) : [];
+      setPosts((prevPosts) => {
+        const mergedPosts = isInitial 
+          ? newPosts // Replace old posts on first load
+          : [...prevPosts, ...newPosts.filter(np => !prevPosts.some(op => op.id === np.id))];
 
-      // Avoid duplicates by filtering old posts
-      const mergedPosts = [...newPosts, ...oldPosts.filter(op => !newPosts.some(np => np.id === op.id))];
+        return mergedPosts.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      });
 
-      // Save merged posts to AsyncStorage
-      await AsyncStorage.setItem("savedPosts", JSON.stringify(mergedPosts));
-
-      setPosts(mergedPosts);
-      setNextPage(data.next);
+      setNextPage(data.next); // Set next page URL (null if no more pages)
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
+
+  // Load initial posts
+  const loadInitialPosts = useCallback(async () => {
+    setLoading(true);
+
+    // Check internet connection
+    const netInfo = await NetInfo.fetch();
+    if (!netInfo.isConnected) {
+      setLoading(false);
+      return;
+    }
+
+    // Fetch first page of posts
+    fetchPosts("https://rxjourneyserver.pythonanywhere.com/home/post_list/?page=1", true);
+  }, []);
 
   useEffect(() => {
-    loadPosts();
-  }, [loadPosts]); // Add loadPosts as a dependency
+    loadInitialPosts();
+  }, [loadInitialPosts]);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -71,9 +63,14 @@ export default function HomeScreen() {
       
       <ArticleList posts={posts} />
 
+      {/* Load More Button */}
       {nextPage && (
-        <TouchableOpacity style={styles.loadMoreButton} onPress={() => fetchPosts(nextPage)} disabled={loading}>
-          <Text style={styles.loadMoreText}>Load More</Text>
+        <TouchableOpacity 
+          style={styles.loadMoreButton} 
+          onPress={() => fetchPosts(nextPage)} 
+          disabled={loading}
+        >
+          <Text style={styles.loadMoreText}>{loading ? "Loading..." : "Load More"}</Text>
         </TouchableOpacity>
       )}
       
